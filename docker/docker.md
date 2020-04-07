@@ -1,3 +1,5 @@
+
+
 # Docker
 
 Docker的原理与执行命令
@@ -207,9 +209,273 @@ docker安装后可以从镜像仓库下载各种容器，由于镜像仓库是�
 
 
 
-### Linux系统Centos中安装
+### LinuxCentos7中安装Docker-ce
 
-​    Docker v 19.03在Centos中的安装官网  https://docs.docker.com/install/linux/docker-ce/cento
+​    Docker v 19.03在Centos中的安装官网  <https://docs.docker.com/engine/install/centos/>
+
+系统要求: 
+
+要安装Docker Engine需要安装在Centos7版本中，其他版本不支持
+
+该`centos-extras`库必须启用。默认情况下，此存储库是启用的，但是如果已禁用它，则需要 [重新启用它](https://wiki.centos.org/AdditionalResources/Repositories)。
+
+`overlay2`建议使用存储驱动程序。
+
+Docker Engine软件包现在称为`docker-ce`,是docker的社区版
+
+Docker的安装方法有多种，下面使用存储库安装
+
+### 使用存储库安装Docker
+
+在新主机上首次安装Docker Engine之前，需要设置Docker存储库。之后，您可以从存储库安装和更新Docker。
+
+#### 1.设置存储库
+
+安装`yum-utils`软件包（提供`yum-config-manager` 实用程序）并设置**稳定的**存储库。
+
+```
+sudo yum install -y yum-utils device-mapper-persistent-data lvm2 
+```
+
+安装数据存储的数据包，通过device-mapper-persistent-data lvm2，在Docker内部容器需要用这两个驱动来完成存储。
+
+yum-utils准备的简化工具，用于修改yum的安装源，-add-repo 设置新的安装源，因为国外的安装源很慢，可以替换使用阿里的镜像
+
+````
+yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+或者官网提供的国外安装源
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+````
+
+#### 2.使用最快的安装源
+
+自动检测那个安装源是最快的，优先使用
+
+```
+ yum makecache fast
+```
+
+#### 3.安装docker-ce
+
+```
+yum -y install docker-ce
+```
+
+#### 4.启动Dcoker
+
+```
+service docker start
+//或者使用
+systemctl start docker
+//开机启动
+systemctl enable docker.service
+```
+
+#### 5.查看docker版本
+
+使用docker version查看docker版本号
+
+````
+docker version
+````
+
+可以看到docker安装了客户端和服务端，版本号是19.03.8
+
+```
+root@localhost ~]# service docker start
+Redirecting to /bin/systemctl start  docker.service
+[root@localhost ~]# docker version
+Client: Docker Engine - Community
+ Version:           19.03.8
+ API version:       1.40
+ Go version:        go1.12.17
+ Git commit:        afacb8b
+ Built:             Wed Mar 11 01:27:04 2020
+ OS/Arch:           linux/amd64
+ Experimental:      false
+
+Server: Docker Engine - Community
+ Engine:
+  Version:          19.03.8
+  API version:      1.40 (minimum version 1.12)
+  Go version:       go1.12.17
+  Git commit:       afacb8b
+  Built:            Wed Mar 11 01:25:42 2020
+  OS/Arch:          linux/amd64
+  Experimental:     false
+ containerd:
+  Version:          1.2.13
+  GitCommit:        7ad184331fa3e55e52b890ea95e65ba581ae3429
+ runc:
+  Version:          1.0.0-rc10
+  GitCommit:        dc9208a3303feef5b3839f4323d9beb36df0a9dd
+ docker-init:
+  Version:          0.18.0
+  GitCommit:        fec3683
+```
+
+#### 6.验证是否正确安装 
+
+ 通过运行`hello-world` 镜像来创建容器验证是否正确安装了Docker Engine
+
+从国外的远程仓库中抽取hello-world的镜像,如果拉取过程中拉去超时或失败，那么可以转到步骤7来配置阿里云镜像加速
+
+````
+docker pull hello-world
+````
+
+```
+[root@localhost ~]# docker pull hello-world
+Using default tag: latest
+latest: Pulling from library/hello-world
+1b930d010525: Pull complete 
+Digest: sha256:f9dfddf63636d84ef479d645ab5885156ae030f611a56f3a7ac7f2fdd86d7e4e
+Status: Downloaded newer image for hello-world:latest
+docker.io/library/hello-world:latest
+```
+
+基于hello-world的镜像来创建容器并运行
+
+```
+docker run hello-world
+```
+
+当输入一下信息时，说明docker正确安装
+
+```
+[root@localhost ~]# docker run hello-world
+
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+
+To generate this message, Docker took the following steps:
+ 1. The Docker client contacted the Docker daemon.
+ 2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+    (amd64)
+ 3. The Docker daemon created a new container from that image which runs the
+    executable that produces the output you are currently reading.
+ 4. The Docker daemon streamed that output to the Docker client, which sent it
+    to your terminal.
+
+To try something more ambitious, you can run an Ubuntu container with:
+ $ docker run -it ubuntu bash
+
+Share images, automate workflows, and more with a free Docker ID:
+ https://hub.docker.com/
+
+For more examples and ideas, visit:
+ https://docs.docker.com/get-started/
+```
+
+#### 7.阿里云加速服务
+
+因为Docker的镜像仓库在国外，网络有可能慢或超时导致无法拉取镜像，可以配置国内的阿里云镜像加速
+
+登陆阿里云的官网<<https://www.aliyun.com/>>
+
+搜索"**容器镜像服务**"--》”**立即开通**"
+
+![](./img/Centos-Docker/阿里云镜像服务.png)
+
+在控制台找到"**镜像加速器**"==>"Centos"==》复制镜像加速器到Centos中执行
+
+![](./img/Centos-Docker/centos的镜像加速器配置.png)
+
+```
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json <<-'EOF'
+{
+  "registry-mirrors": ["https:自己的镜像服务地址.com"]
+}
+EOF
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
+
+以上配置说明一下，第一条命令创建/etc/docker目录，
+
+第二条命令以json字符串的格式在/etc/docker/daemon.json文件中追加注册中心，即镜像加速地址，daemon.json是docker的默认配置文件，docker在启动时会自动加载这个文件
+
+systemctl daemon-reload 对/etc/docker/daemon.json这个文件进行重新加载
+
+systemctl restart docker会重启docker
+
+测试拉取tomcat镜像，可以很快拉取到镜像
+
+```
+docker pull tomcat
+```
+
+
+
+#### 8.安装指定版本的Docker
+
+上面的例子使用“**yum -y install docker-ce**”时会安装最新的docker-ce版本，要安装*特定版本*的Docker Engine，请在存储库中列出可用版本，然后选择并安装：
+
+```
+yum list docker-ce --showduplicates | sort -r
+```
+
+列出版本如下:
+
+```
+root@localhost ~]# yum list docker-ce --showduplicates | sort -r
+已加载插件：fastestmirror, langpacks
+已安装的软件包
+可安装的软件包
+ * updates: mirrors.aliyun.com
+Loading mirror speeds from cached hostfile
+ * extras: mirrors.tuna.tsinghua.edu.cn
+docker-ce.x86_64            3:19.03.8-3.el7                    docker-ce-stable 
+docker-ce.x86_64            3:19.03.8-3.el7                    @docker-ce-stable
+docker-ce.x86_64            3:19.03.7-3.el7                    docker-ce-stable 
+docker-ce.x86_64            3:19.03.6-3.el7                    docker-ce-stable 
+docker-ce.x86_64            3:19.03.5-3.el7                    docker-ce-stable 
+docker-ce.x86_64            3:19.03.4-3.el7                    docker-ce-stable 
+docker-ce.x86_64            3:19.03.3-3.el7                    docker-ce-stable 
+docker-ce.x86_64            3:19.03.2-3.el7                    docker-ce-stable 
+docker-ce.x86_64            3:19.03.1-3.el7                    docker-ce-stable 
+docker-ce.x86_64            3:19.03.0-3.el7                    docker-ce-stable 
+docker-ce.x86_64            3:18.09.9-3.el7                    docker-ce-stable 
+docker-ce.x86_64            3:18.09.8-3.el7                    docker-ce-stable 
+docker-ce.x86_64            3:18.09.7-3.el7                    docker-ce-stable 
+docker-ce.x86_64            3:18.09.6-3.el7                    docker-ce-stable 
+docker-ce.x86_64            3:18.09.5-3.el7                    docker-ce-stable 
+docker-ce.x86_64            3:18.09.4-3.el7                    docker-ce-stable 
+docker-ce.x86_64            3:18.09.3-3.el7                    docker-ce-stable 
+docker-ce.x86_64            3:18.09.2-3.el7                    docker-ce-stable 
+docker-ce.x86_64            3:18.09.1-3.el7                    docker-ce-stable 
+docker-ce.x86_64            3:18.09.0-3.el7                    docker-ce-stable 
+docker-ce.x86_64            18.06.3.ce-3.el7                   docker-ce-stable 
+docker-ce.x86_64            18.06.2.ce-3.el7                   docker-ce-stable 
+docker-ce.x86_64            18.06.1.ce-3.el7                   docker-ce-stable 
+docker-ce.x86_64            18.06.0.ce-3.el7                   docker-ce-stable 
+docker-ce.x86_64            18.03.1.ce-1.el7.centos            docker-ce-stable 
+docker-ce.x86_64            18.03.0.ce-1.el7.centos            docker-ce-stable 
+docker-ce.x86_64            17.12.1.ce-1.el7.centos            docker-ce-stable 
+docker-ce.x86_64            17.12.0.ce-1.el7.centos            docker-ce-stable 
+docker-ce.x86_64            17.09.1.ce-1.el7.centos            docker-ce-stable 
+docker-ce.x86_64            17.09.0.ce-1.el7.centos            docker-ce-stable 
+docker-ce.x86_64            17.06.2.ce-1.el7.centos            docker-ce-stable 
+docker-ce.x86_64            17.06.1.ce-1.el7.centos            docker-ce-stable 
+docker-ce.x86_64            17.06.0.ce-1.el7.centos            docker-ce-stable 
+docker-ce.x86_64            17.03.3.ce-1.el7                   docker-ce-stable 
+docker-ce.x86_64            17.03.2.ce-1.el7.centos            docker-ce-stable 
+docker-ce.x86_64            17.03.1.ce-1.el7.centos            docker-ce-stable 
+docker-ce.x86_64            17.03.0.ce-1.el7.centos            docker-ce-stable 
+ * base: mirrors.aliyun.com
+```
+
+返回的列表取决于启用了哪些存储库，并且特定于您的CentOS版本（`.el7`在本示例中以后缀表示）。
+
+通过软件包名称安装特定版本，该软件包名称是软件包名称（`docker-ce`）加上版本字符串（第二列），从第一个冒号（`:`）一直到第一个连字符，并用连字符（`-`）分隔。例如，`docker-ce-18.09.1`。
+
+```
+//如安装18.09.1版本
+sudo yum install docker-ce-18.09.1 
+//语法
+sudo yum install docker-ce-<VERSION_STRING> docker-ce-cli-<VERSION_STRING> containerd.io
+```
 
 
 
@@ -272,24 +538,3 @@ docker
 格式: docker exec [-it] 容器id: exec : 在对应的容器中执行命令; -it: 采用交互方式执行命令
 
 实例： docker exec -it  容器id  /bin/bash
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
