@@ -130,13 +130,11 @@ VM需要安装操作系统： 比如一个很小的应用，可能只需要一�
 
 ## Docker安装
 
-### Linux系统Centos中安装
+### 在Windows上安装Docker
 
-​    Docker v 19.03在Centos中的安装官网  https://docs.docker.com/install/linux/docker-ce/cento
+官网windows安装说明: <https://docs.docker.com/docker-for-windows/install/>
 
-### 在Windows上安装Docker Desktop
-
-系统要求:
+#### 系统要求:
 
 - Windows 10 64位：专业版，企业版或教育版（内部版本15063或更高版本）。
 
@@ -150,58 +148,69 @@ VM需要安装操作系统： 比如一个很小的应用，可能只需要一�
 
   - 必须在BIOS设置中启用BIOS级硬件虚拟化支持。有关更多信息，请参见 [虚拟化](https://docs.docker.com/docker-for-windows/troubleshoot/#virtualization-must-be-enabled)
 
-    ​
+#### 安装前准备:
 
-  安装前准备:
-   
-   1.Hyper-v已安装并正常工作
+ 1.Hyper-v已安装并正常工作
+ 在开始菜单中，键入“ **启用或关闭Windows功能”**，然后按Enter。将Hyper-V前面勾选上
+  ![启用Hyper-V](./img/启用Hyper-v功能.png) 
+ 2.启用虚拟化
+ 除Hyper-v启用外还必须启用虚拟化。桌面右键“**任务管理器**”，检查任务管理器上的“**性能**”选项卡：
+  ![](./img/启用虚拟化.png) 
+ 3.下载docker
+  <https://hub.docker.com/editions/community/docker-ce-desktop-windows/> 下载类似“**exe4j_Downloader_3265010232.exe**”的文件
 
-    在开始菜单中，键入“ **启用或关闭Windows功能”**，然后按Enter。将Hyper-V前面勾选上
 
-    ![启用Hyper-V](./img/启用Hyper-v功能.png)
 
-    2.启用虚拟化
+#### 安装Docker
 
-    除Hyper-v启用外还必须启用虚拟化。桌面右键“**任务管理器**”，检查任务管理器上的“**性能**”选项卡：
-
-    ![](./img/启用虚拟化.png)
-
-    3.下载docker
-
-    <https://hub.docker.com/editions/community/docker-ce-desktop-windows/> 下载类似“**exe4j_Downloader_3265010232.exe**”的文件
-
-安装Docker
   1. 双击**Docker Desktop Installer.exe**运行安装程序。
-
        如果尚未下载安装程序（`Docker Desktop Installer.exe`），则可以从 [**Docker Hub进行下载**](https://hub.docker.com/editions/community/docker-ce-desktop-windows/)。它通常下载到您的`Downloads`文件夹中，或者您可以从Web浏览器底部的最近下载栏中运行它。
 
   2. 按照安装向导上的说明接受许可证，授权安装程序，然后继续安装。
-
        出现提示时，请在安装过程中使用您的系统密码授权Docker Desktop Installer。需要特权访问才能安装网络组件，到Docker应用程序的链接以及管理Hyper-V VM。
+
   3. 在安装完成对话框上单击**完成**，然后启动Docker Desktop应用程序。
 
-运行Docker
+       ​
+
+#### 运行Docker
+
 Docker Desktop在安装后不会自动启动。要启动Docker Desktop，请搜索Docker，然后在搜索结果中选择Docker Desktop。
   ![](./img/Docker桌面图标.png)
-  
+
+
+
 当状态栏中的鲸鱼图标保持稳定时，Docker桌面将启动并运行，并且可以从任何终端窗口(CMD)访问
   ![](./img/docker状态栏图标.png)
-在命令窗口输入"**docker version**"" ,可看到安装的docker版本，那么docker安装完成
+
+在命令窗口输入"**docker version**"" ,可看到安装的docker版本，包含客户端和服务端。那么docker安装完成
   ![](./img/window命令行查看docker安装版本.png)
-  
-可以从镜像仓库下载各种容器，由于镜像仓库是在国外，所以下载会很慢，可以配置阿里云的容器镜像服务，使用加速器可以提升获取Docker官方镜像的速度
+
+
+
+#### 镜像加速
+
+docker安装后可以从镜像仓库下载各种容器，由于镜像仓库是在国外，所以下载会很慢，可以配置阿里云的容器镜像服务，使用加速器可以提升获取Docker官方镜像的速度
 获取阿里云的镜像服务可参考如下
 注册一个账号或使用支付宝登陆阿里云，<https://www.aliyun.com>,搜索容器镜像服务
   ![](./img/aliyun容器镜像服务.png)
-  
+
 点击管理控制台，进入控制台页面，在控制台,找到阿里云的镜像加速器，复制地址
   ![](./img/aliyun镜像加速器.png)
-  
+
 本机windows右键鲸鱼图标，打开setting
   ![](./img/docker的window设置.png)
-  
+
 复制之前的镜像加速器地址填入Deamon中的Register mirrors，并Apply
+
    ![](./img/window的docker设置容器镜像服务地址.png)
+
+
+
+### Linux系统Centos中安装
+
+​    Docker v 19.03在Centos中的安装官网  https://docs.docker.com/install/linux/docker-ce/cento
+
 
 
 Docker基本概念
