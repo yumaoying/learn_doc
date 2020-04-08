@@ -505,17 +505,21 @@ Docker客户端向Docker服务端发送命令，Docker服务端分三部分，Do
 
 ## Docker常用命令
 
-* docker pull 镜像名<:tags>: 从远程仓库抽取镜像 tags是镜像的版本，若没有填写，会下载最新版
+* docker pull 镜像名<:tags>: 从远程仓库抽取镜像 tags是镜像的版本，若没有填写，会下载最新版（lasted）
 
 * docker images : 查看本地镜像
 
-* docker run 镜像名<:tags>:创建容器，启动应用。若本地镜像还没有抽取远程仓库抽取，那么会先从远程仓库抽取镜像，然后再运行，启动应用。
+* docker run 镜像名<:tags>:创建容器，启动应用。若本地镜像还没有抽取远程仓库抽取，那么会先从远程仓库抽取pull镜像，然后再运行，启动应用。
+
+    可以组合-d，-p等命令使用
 
    -d:  应用在后台运行
 
-  -p 宿主机端口:镜像应用端口 : 对宿主机和容器端口进行映射
+​        -p 宿主机端口:镜像应用端口 : 对宿主机和容器端口进行映射
 
 * docker ps：查看正在运行中的镜像
+
+   docker ps -a:查看所有镜像，包含未运行的
 
 * docker rm <-f> 容器id: 删除指定容器，若当前容器还在运行，可以使用 -f 强制删除
 
@@ -523,15 +527,292 @@ Docker客户端向Docker服务端发送命令，Docker服务端分三部分，Do
 
 
 
-<https://hub.docker.com/>        保存了已知的所有镜像仓库，可以直接从这里搜索并下载镜像Docker部署
 
-Docker 部署Tomacat
+#### Docker部署Tomcat实例
 
-docker    pull 
+下面以安装tomcat为例，说明如何使用这些命令
 
-docker 
+可以到Docker的中央仓库<https://hub.docker.com/>  搜索需要拉取的镜像， 它保存了已知的所有镜像仓库，可以直接从这里搜索并下载镜像Docker部署
+   docker中央仓库搜索tomcat,一般选择官方发布的版本，右侧有tomcat的版本，可以根据自己的需求选择版本，这里我们选择Linux-x86-64(latest)版本，在中部可以看到docker提供了很多不同的tag版本，
+   以9.0.33-jdk8-openjdk 为例，它表示容器创建后内部启动的tomcat版本是9.0.33，同时jdk是基于oracle开源的openjdk的jdk8版本来构建的。
+   在官网下方有介绍如何使用tomcat的镜像   ![](./img/docker命令/hub.docker搜索tomcat镜像.png)
+
+   ##### 1.docker pull 拉取
+
+tomcat的镜像，默认拉取latest版本的（latest可能不是最新的，可能是使用最多的版本）
+
+```
+docker pull tomcat
+```
+
+执行后效果如下
+
+```
+[root@localhost module]# docker pull tomcat
+Using default tag: latest
+latest: Pulling from library/tomcat
+f15005b0235f: Pull complete 
+41ebfd3d2fd0: Pull complete 
+b998346ba308: Pull complete 
+f01ec562c947: Pull complete 
+74c11ae3efe8: Pull complete 
+3a7e595a3ef5: Pull complete 
+208407758d73: Downloading [============================>                      ]   58.8MB/104.2MB
+208407758d73: Pull complete 
+b5238120a381: Pull complete 
+1716556aae46: Pull complete 
+1336a11b2bd2: Pull complete 
+Digest: sha256:c0ba286d9903006423ff4e2818845f1cc4046aa829bbfbc9b96f887423cd9f47
+Status: Downloaded newer image for tomcat:latest
+docker.io/library/tomcat:latest
+```
+
+若想要拉取指定版本，如9.0.33-jdk8-openjdk ，可以使用pull 镜像名:版本方式拉取
+
+```
+docker pull tomcat:9.0.33-jdk8-openjdk 
+```
+
+执行效果如下,可以看到由于9.0.33-jdk8-openjdk版本和之前下载的latest 版本重叠的部分f15005b0235f等，所有不会重新下载，而d17aa789515f，c69e3b69a1c9需要重新下载。
+
+```
+[root@localhost module]# docker pull tomcat:9.0.33-jdk8-openjdk 
+9.0.33-jdk8-openjdk: Pulling from library/tomcat
+f15005b0235f: Already exists 
+41ebfd3d2fd0: Already exists 
+b998346ba308: Already exists 
+f01ec562c947: Already exists 
+74c11ae3efe8: Already exists 
+3a7e595a3ef5: Already exists 
+208407758d73: Already exists 
+b5238120a381: Already exists 
+d17aa789515f: Pull complete 
+c69e3b69a1c9: Pull complete 
+Digest: sha256:fa33ec8d2c120e896421ef1223d61cf37af7a7ea3e9d9134c71e743d4c7abeeb
+Status: Downloaded newer image for tomcat:9.0.33-jdk8-openjdk
+docker.io/library/tomcat:9.0.33-jdk8-openjdk
+```
+
+##### 2.docker images 查看镜像
+
+```
+docker images 
+```
+
+执行效果,可以看到目前有三个镜像，其中tomcat对应2个镜像，可以通过IMAGE ID 来区分不同镜像
+
+```
+[root@localhost module]# docker images
+REPOSITORY          TAG                   IMAGE ID            CREATED             SIZE
+tomcat              latest                e36064f7c6f0        7 days ago          528MB
+tomcat              9.0.33-jdk8-openjdk   1e33b6115c9a        7 days ago          529MB
+hello-world         latest                fce289e99eb9        15 months ago       1.84kB
+```
+
+##### 3.docker run 创建容器
+
+创建并运行容器
+
+```
+docker run tomcat
+```
+
+执行效果
+
+```
+[root@localhost module]# docker run tomcat
+08-Apr-2020 16:13:53.719 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version name:   Apache Tomcat/8.5.53
+08-Apr-2020 16:13:53.752 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server built:          Mar 11 2020 10:01:39 UTC
+08-Apr-2020 16:13:53.752 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Server version number: 8.5.53.0
+08-Apr-2020 16:13:53.753 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Name:               Linux
+08-Apr-2020 16:13:53.753 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log OS Version:            3.10.0-1062.12.1.el7.x86_64
+08-Apr-2020 16:13:53.753 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Architecture:          amd64
+08-Apr-2020 16:13:53.753 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Java Home:             /usr/local/openjdk-8/jre
+08-Apr-2020 16:13:53.753 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Version:           1.8.0_242-b08
+08-Apr-2020 16:13:53.753 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log JVM Vendor:            Oracle Corporation
+08-Apr-2020 16:13:53.753 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_BASE:         /usr/local/tomcat
+08-Apr-2020 16:13:53.753 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log CATALINA_HOME:         /usr/local/tomcat
+08-Apr-2020 16:13:53.760 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.config.file=/usr/local/tomcat/conf/logging.properties
+08-Apr-2020 16:13:53.760 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager
+08-Apr-2020 16:13:53.761 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djdk.tls.ephemeralDHKeySize=2048
+08-Apr-2020 16:13:53.761 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.protocol.handler.pkgs=org.apache.catalina.webresources
+08-Apr-2020 16:13:53.761 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dorg.apache.catalina.security.SecurityListener.UMASK=0027
+08-Apr-2020 16:13:53.761 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dignore.endorsed.dirs=
+08-Apr-2020 16:13:53.761 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.base=/usr/local/tomcat
+08-Apr-2020 16:13:53.762 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Dcatalina.home=/usr/local/tomcat
+08-Apr-2020 16:13:53.762 INFO [main] org.apache.catalina.startup.VersionLoggerListener.log Command line argument: -Djava.io.tmpdir=/usr/local/tomcat/temp
+08-Apr-2020 16:13:53.762 INFO [main] org.apache.catalina.core.AprLifecycleListener.lifecycleEvent Loaded APR based Apache Tomcat Native library [1.2.23] using APR version [1.6.5].
+08-Apr-2020 16:13:53.762 INFO [main] org.apache.catalina.core.AprLifecycleListener.lifecycleEvent APR capabilities: IPv6 [true], sendfile [true], accept filters [false], random [true].
+08-Apr-2020 16:13:53.763 INFO [main] org.apache.catalina.core.AprLifecycleListener.lifecycleEvent APR/OpenSSL configuration: useAprConnector [false], useOpenSSL [true]
+08-Apr-2020 16:13:53.779 INFO [main] org.apache.catalina.core.AprLifecycleListener.initializeSSL OpenSSL successfully initialized [OpenSSL 1.1.1d  10 Sep 2019]
+08-Apr-2020 16:13:54.383 INFO [main] org.apache.coyote.AbstractProtocol.init Initializing ProtocolHandler ["http-nio-8080"]
+08-Apr-2020 16:13:54.529 INFO [main] org.apache.tomcat.util.net.NioSelectorPool.getSharedSelector Using a shared selector for servlet write/read
+08-Apr-2020 16:13:54.599 INFO [main] org.apache.catalina.startup.Catalina.load Initialization processed in 3279 ms
+08-Apr-2020 16:13:54.702 INFO [main] org.apache.catalina.core.StandardService.startInternal Starting service [Catalina]
+08-Apr-2020 16:13:54.702 INFO [main] org.apache.catalina.core.StandardEngine.startInternal Starting Servlet Engine: Apache Tomcat/8.5.53
+08-Apr-2020 16:13:54.737 INFO [main] org.apache.coyote.AbstractProtocol.start Starting ProtocolHandler ["http-nio-8080"]
+08-Apr-2020 16:13:54.779 INFO [main] org.apache.catalina.startup.Catalina.start Server startup in 179 ms
+```
+
+可以看到tomcat的latest的容器已创建并运行，且在容器内端口默认是“**8080**”端口。
+
+###### 3.1 docker宿主机和容器通信
+
+需要注意的当我们从浏览器中输入“http://主机ip:8080”时并不能访问到tomcat。用于容纳docker的宿主机和docker容器并不能直接进行通信，需要进行宿主机和容器的端口映射才能访问。
+
+上面的tomcat按“**ctl+C**”结束运行，使用端口映射方式运行。
+
+使用”**docker run -p 宿主机端口:容器端口**”，进行端口映射
+
+```
+docker run -p 8000:8080 tomcat
+```
+
+这样启动项目后，可以通过访问主机的8000端口进行访问，当访问主机的8000端口时，会将请求转发给容器的8080端口服务进行处理。
+
+可以打开另外的窗口，用一下"*netstat -tulpn***"命令查看端口情况
+
+```
+netstat -tulpn
+```
+
+可以看到8000端口的监听状态,是由docker-proxy (docker代理)来完成的。主机端口和容器端口不一样，这样设计的好处是，当我们不想用tomcat提供服务，想使用其他的容器比如jetty等时，只要替换容器，容器的端口不变，宿主机通过原来的端口还能进行访问，不用关心内部使用的容器。
+
+```
+[root@localhost ~]# netstat -tulpn
+Active Internet connections (only servers)
+Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program nam  tcp6       0      0 :::8000                 :::*                    LISTEN      3579/docker-proxy   
+```
+
+###### 3.2 docker run -d容器后台运行
+
+上面的演示中，当我们结束当前会话，正在运行的tomcat也会结束运行，为了让容器能在后台运行
+
+可以使用“**-d**“命令
+
+```
+ docker run -p 8000:8080 -d tomcat
+```
+
+##### 4.docker ps 运行中的容器 
+
+docker ps列出当前运行中的容器信息,
+
+```
+docker ps
+```
+
+可以看到当前正在运行的容器,容器id，镜像名，最后执行的命令，创建时间，本地和容器端口映射，容器名等
+
+![](./img/docker命令/查看当前运行中的容器.png)
+
+docker ps -a 可以列出所有容器信息，包含没有运行的
+
+```
+docker ps -a
+```
+
+![](./img/docker命令/查看所有容器.png)
 
 
+
+##### 5.docker rm 移除容器
+
+使用docker ps查看到运行容器后，可以使用 docker rm 容器编号来移除容器
+
+```
+docker rm 容器id
+```
+
+运行后会提示,无法进行移除，因为容器正在运行
+
+```
+[root@localhost module]# docker rm 5d4fab33243b
+Error response from daemon: You cannot remove a running container 5d4fab33243bb5e691c03239d35adee07386b1c05ec6a279d3a3e4972f277425. Stop the container before attempting removal or force remove
+```
+
+使用”**docker stop 容器id** “停止容器后，再移除容器，也可以使用强制移除"**docker rm -f 容器id**"
+
+```
+docker rm -f 容器id
+```
+
+执行效果
+
+```
+[root@localhost module]# docker rm -f 5d4fab33243b
+5d4fab33243b
+[root@localhost module]# 
+```
+
+
+
+#####  6.docker start 运行容器
+
+```
+docker start 容器id
+```
+
+执行效果
+
+![](./img/docker命令/启动运行容器.png)
+
+
+
+##### 7.docker stop 停止运行 
+
+可以使用”**docker stop 容器id**“来停止正在运行的容器
+
+```
+docker stop 容器id
+```
+
+停止后，查看正在运行的容器
+
+```
+[root@localhost module]# docker stop 5d4fab33243b
+5d4fab33243b
+[root@localhost module]# docker ps 
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES
+```
+
+#####  8.docker rmi  删除镜像
+
+当整个镜像都不想要时，可以直接删除镜像"**docker rmi 镜像名:版本**",如移除tomcat的9.0.33-jdk8-openjdk版本镜像
+
+```
+docker rmi tomcat:9.0.33-jdk8-openjdk
+```
+
+执行效果
+
+![](./img/docker命令/移除镜像.png)
+
+当容器正在运行时，直接移除会失败，可以使用 ”**docker rm -f  镜像名:版本**“来强制移除
+
+```
+docker rm -f tomcat
+```
+
+演示过程
+
+```
+[root@localhost module]# docker run -p 8000:8080 -d tomcat
+731c491d8d38b3668c9b28a9d89ec24b09aa4a639255e970666bc55eed928584at
+[root@localhost module]# docker rmi tomcat
+Error response from daemon: conflict: unable to remove repository reference "tomcat" (must force) - container fd54e66cf661 is using its referenced image e36064f7c6f0
+[root@localhost module]# docker rmi -f tomcat
+Untagged: tomcat:latest
+Untagged: tomcat@sha256:c0ba286d9903006423ff4e2818845f1cc4046aa829bbfbc9b96f887423cd9f47
+[root@localhost module]# docker images
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+<none>              <none>              e36064f7c6f0        7 days ago          528MB
+hello-world         latest              fce289e99eb9        15 months ago       1.84kB
+```
+
+
+
+### Docker容器内部结构
 
 在容器中执行命令:
 
